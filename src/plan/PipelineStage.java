@@ -1,24 +1,19 @@
-import process.BadConfigException;
-import type.DataType;
-import process.Process;
+package plan;
 
-import java.util.HashMap;
+import log.Log;
+import process.Process;
+import type.DataType;
+
+import java.util.Map;
 
 public class PipelineStage {
     private Process process;
     private String name;
 
-    public PipelineStage(String configString) throws BadConfigException {
-        HashMap<String, String> params = new HashMap<>();
+    public PipelineStage(String processName, Map<String, String> params) throws Exception {
+        name = processName;
 
-        try {
-            process = (Process) Class.forName("Process").newInstance();
-        } catch (ClassNotFoundException e) {
-            throw new BadConfigException("unknown pipeline stage");
-        } catch (Exception e) {
-
-        }
-
+        process = (Process) Class.forName("process." + processName).getConstructor().newInstance();
         process.configure(params);
     }
 

@@ -1,6 +1,5 @@
 package type;
 
 public interface DataType {
-    void read(String path);
-    void write(String path);
+    void save(String path);
 }

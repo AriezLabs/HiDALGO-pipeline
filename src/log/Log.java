@@ -1,3 +1,5 @@
+package log;
+
 public class Log {
     public static final long startTime = System.currentTimeMillis();
 
