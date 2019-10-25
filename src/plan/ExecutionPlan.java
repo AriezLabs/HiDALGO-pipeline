@@ -5,9 +5,8 @@ import type.DataType;
 import java.io.*;
 
 /**
- * A list of Process classes representing stages in the pipeline.
- * Offers methods tying them together.
- * Parsing is delegated to parser.PipelineStage
+ * A list of PipelineStages. This class ties them together and offers a unified interface for creating a pipeline,
+ * sending data through it and retrieving the result.
  */
 public class ExecutionPlan {
     private DataType currentData;
