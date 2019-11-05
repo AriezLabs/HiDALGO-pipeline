@@ -26,4 +26,8 @@ public class ExecutionPlan {
     public DataType getCurrentData() {
         return currentData;
     }
+
+    public int numStages() {
+        return stages.length;
+    }
 }

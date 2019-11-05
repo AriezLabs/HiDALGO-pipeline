@@ -3,9 +3,12 @@ package log;
 public class Log {
     public static final long startTime = System.currentTimeMillis();
 
+    private static int currentLogLevel = 1;
+
     public static final int DEBUG = 0;
     public static final int INFO = 1;
-    public static final int ERROR = 2;
+    public static final int WARNING = 2;
+    public static final int ERROR = 3;
 
     // from https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
     public static final String ANSI_RESET = "\u001B[0m";
@@ -18,14 +21,20 @@ public class Log {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
-    private static int currentLogLevel = 1;
-
     public static void debug(Object stuff) {
         log(stuff, DEBUG);
     }
 
     public static void debug(Object stuff, int indentLevel) {
         log(stuff, DEBUG, indentLevel);
+    }
+
+    public static void warn(Object stuff) {
+        log(stuff, WARNING);
+    }
+
+    public static void warn(Object stuff, int indentLevel) {
+        log(stuff, WARNING, indentLevel);
     }
 
     public static void error(Object stuff) {
@@ -63,12 +72,23 @@ public class Log {
                 case INFO:
                     System.out.printf("%sINFO%s]\t", ANSI_GREEN, ANSI_RESET);
                     break;
+                case WARNING:
+                    System.out.printf("%sWARN%s]\t", ANSI_YELLOW, ANSI_RESET);
+                    break;
                 case ERROR:
                     System.out.printf("%sERROR%s]\t", ANSI_RED, ANSI_RESET);
             }
 
-            for (int i = 0; i < indentLevel; i++)
-                System.out.print("\t");
+            if (indentLevel > 0) {
+                while (indentLevel > 1) {
+                    System.out.print("\t");
+                    indentLevel--;
+                }
+                System.out.print("└");
+                indentLevel = indentLevel * 4;
+                for (int i = 1; i < indentLevel; i++)
+                    System.out.print("─");
+            }
 
             System.out.println(stuff.toString());
         }

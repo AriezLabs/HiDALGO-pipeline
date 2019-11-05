@@ -1,4 +1,4 @@
-package process.exception;
+package excption;
 
 public class BadInputFormatException extends RuntimeException {
     public BadInputFormatException(String msg) {

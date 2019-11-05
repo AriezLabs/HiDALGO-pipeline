@@ -1,35 +1,57 @@
 package plan;
 
+import excption.BadConfigException;
 import log.Log;
-import process.Process;
+import process.Stage;
 import type.DataType;
 
 import java.util.Map;
 
 /**
- * Wrapper for an individual algorithm or process representing a stage in the pipeline. Instantiates the stage via
+ * Wrapper for an individual algorithm or stage representing a stage in the pipeline. Instantiates the stage via
  * reflection and configures it according to parameters. Times how long the stage took.
  */
-public class PipelineStage {
-    private Process process;
+class PipelineStage {
+    private Stage stage;
     private String name;
-    private long execTime;
 
-    public PipelineStage(String processName, Map<String, String> params) throws Exception {
+    PipelineStage(String processName, Map<String, String> params) throws Exception {
         name = processName;
 
-        process = (Process) Class.forName("process." + processName).getConstructor().newInstance();
-        process.configure(params);
+        stage = (Stage) Class.forName("process." + processName).getConstructor().newInstance();
+        try {
+            stage.configure(params);
+        } catch (BadConfigException e) {
+            throw new BadConfigException(String.format("at stage %s: %s", name, e.getMessage()));
+        }
     }
 
-    public DataType execute(DataType input) throws Exception {
+    DataType execute(DataType input) throws Exception {
         long startTime = System.currentTimeMillis();
         Log.info(String.format("starting stage %s", name));
 
-        DataType result = process.execute(input);
+        DataType result;
+        try {
+            result = stage.execute(input);
+        } catch (ClassCastException e) {
+            System.err.println("Class cast exception: likely mismatching input types for validation and execute function!");
+            throw e;
+        }
 
-        execTime = System.currentTimeMillis() - startTime;
+        long execTime = System.currentTimeMillis() - startTime;
         Log.info(String.format("stage %s completed in %ds", name, (int) (0.001d * execTime)));
         return result;
+    }
+
+    Class getReturnType(){
+        return stage.getReturnType();
+    }
+
+    Class getInputType(){
+        return stage.getInputType();
+    }
+
+    String getName() {
+        return name;
     }
 }

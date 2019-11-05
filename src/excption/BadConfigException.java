@@ -1,4 +1,4 @@
-package process.exception;
+package excption;
 
 public class BadConfigException extends Exception {
     public BadConfigException(String msg) {
