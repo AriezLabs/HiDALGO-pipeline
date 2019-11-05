@@ -34,19 +34,7 @@ public class AddZeroNode implements Stage {
         if (in.getIndexOffset() != 1)
             throw new RuntimeException("AddZeroNode requires index offset of exactly one for Metis graphs");
 
-        ProcessBuilder pb = new ProcessBuilder("python", scriptPath, in.getFile().getAbsolutePath());
-
-        Log.info(String.format("executing: %s", pb.command().stream().reduce("", (a, b) -> a + " " + b)), 1);
-
-        Process p = pb.start();
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-            String line;
-            while ((line = br.readLine()) != null)
-                Log.debug(line, 2);
-        }
-
-        int exitcode = p.waitFor();
+        int exitcode = PythonScript.run("python/AddZeroNode.py", in.getFile().getAbsolutePath());
 
         if(exitcode == 0)
             return new MetisFile(in.getFile().getPath(), 0);
