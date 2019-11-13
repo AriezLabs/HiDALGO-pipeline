@@ -63,6 +63,7 @@ public class Parser {
 
             if (currentSymbol.equals("{")) {
 
+                // currentSymbol is param name/key
                 while (!(currentSymbol = next(st)).equals("}")) {
                     String value = next(st);
 

@@ -25,6 +25,7 @@ public class ParseMetis implements Stage {
 
     @Override
     public DataType execute(DataType uncastedInput) throws Exception {
+        MetisFile in = (MetisFile) uncastedInput;
         return null;
     }
 }

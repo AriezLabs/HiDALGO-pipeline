@@ -5,8 +5,16 @@ import log.Log;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-class PythonScript {
-    static int run(String script, String... params) throws Exception {
+abstract class PythonScript {
+
+    /**
+     * run a python script
+     * @param script Path to python script
+     * @param params params for script
+     * @return exit code of script
+     * @throws Exception if script does not exist
+     */
+    int run(String script, String... params) throws Exception {
         String[] command = new String[params.length + 2];
         command[0] = "python";
         command[1] = script;
