@@ -6,8 +6,12 @@ import type.filetype.MetisFile;
 
 import java.util.Map;
 
-public class AddZeroNode extends PythonScript implements Stage {
-    public static final String scriptPath = "python/AddZeroNode.py";
+public class ClusterNeighborhoods extends PythonScript implements Stage {
+    public static final String scriptPath = "python/ClusterNeighborhoods.py";
+
+    private static final  String nthreadsParamName = "threads";
+
+    private String nthreads;
 
     @Override
     public Class getInputType() {
@@ -21,22 +25,20 @@ public class AddZeroNode extends PythonScript implements Stage {
 
     @Override
     public void configure(Map<String, String> params) throws BadConfigException {
-
+        if ((nthreads = params.get(nthreadsParamName)) == null)
+            nthreads = "1";
     }
 
     @Override
     public DataType execute(DataType uncastedInput) throws Exception {
         MetisFile in = (MetisFile) uncastedInput;
 
-        if (in.getIndexOffset() != 1)
-            throw new RuntimeException("AddZeroNode requires index offset of exactly one for Metis graphs");
-
         String path = in.getFile().getAbsolutePath();
-        String outPath = path + "WithCentralNode.metis";
-        int exitcode = run(scriptPath, path, outPath);
+        String outPath = path + "Communities.nls";
+        int exitcode = run(scriptPath, path, outPath, nthreads);
 
         if(exitcode == 0)
-            return new MetisFile(outPath, 0);
+            return null;//new MetisFile(outPath, 0);
         else
             throw new RuntimeException("AddZeroNode python script exited with bad code " + exitcode);
     }

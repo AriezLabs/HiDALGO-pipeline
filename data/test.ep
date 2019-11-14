@@ -3,7 +3,11 @@ SelectMetisGraph {
     Offset 1
 }
 
-AddZeroNode {
+AddZeroNode { }
 
+ClusterNeighborhoods {
+    threads 8
 }
+
+
 
