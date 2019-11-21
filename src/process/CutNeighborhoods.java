@@ -14,7 +14,7 @@ import java.util.*;
 public class CutNeighborhoods implements Stage {
 
     Neighborhood[] neighborhoods;
-    ArrayList<Neighborhood>[] index;
+    HashMap<Integer, Neighborhood>[] index;
 
     @Override
     public Class getInputType() {
@@ -39,6 +39,7 @@ public class CutNeighborhoods implements Stage {
         Log.info("inited db and indexed", 1);
         secondPass(mf);
         Log.info("filled db", 1);
+        // TODO write writer; check correctness of this beast
         write();
 
         return null;
@@ -70,12 +71,12 @@ public class CutNeighborhoods implements Stage {
             int averageDegree = numberOfEdges / numberOfNodes;
 
             neighborhoods = new Neighborhood[numberOfNodes];
-            index = new ArrayList[numberOfNodes];
+            index = new HashMap[numberOfNodes];
 
             // initialize array lists
             for (int i = 0; i < neighborhoods.length; i++) {
                 neighborhoods[i] = new Neighborhood();
-                index[i] = new ArrayList<>(2 * numberOfEdges / numberOfNodes);
+                index[i] = new HashMap<>(2 * numberOfEdges / numberOfNodes);
             }
 
             int currentLine = 0;
@@ -90,14 +91,17 @@ public class CutNeighborhoods implements Stage {
 
                 } else {
                     // when we see a number we note that the current neighborhood contains the node with the corresponding id
+                    // and map the id to a continuous one within the neighborhood.
                     neighborsCount++;
                     currentNode = ((int) st.nval) - input.getIndexOffset();
-                    index[currentNode].add(neighborhoods[currentLine]);
+                    neighborhoods[currentLine].mapId(currentNode);
+                    index[currentNode].put(currentLine, neighborhoods[currentLine]);
                 }
             }
 
-            for(ArrayList<Neighborhood> al : index)
-                Collections.sort(al);
+            // TODO test performance of sorted lists vs. hashmaps
+            //for(ArrayList<Neighborhood> al : index)
+            //    Collections.sort(al);
         }
     }
 
@@ -122,12 +126,20 @@ public class CutNeighborhoods implements Stage {
 
                     // For all neighborhoods that contain nodes fromNode and toNode,
                     // add an edge between the two nodes
-                    // TODO use sorting instead of naive n^2
-                    for(Neighborhood n1 : index[fromNode])
-                        for(Neighborhood n2 : index[toNode])
-                            if(n1 == n2)
-                                // TODO id map is missing
-                                n1.addEdge(fromNode, toNode);
+                    // choose the smaller of both maps to iterate over, shaves a few % off runtime
+                    // TODO test performance of sorted lists vs. hash index
+                    if (index[fromNode].size() < index[toNode].size()) {
+                        for(Neighborhood n : index[fromNode].values())
+                            if (index[toNode].containsKey(n.centralNode)) {
+                                n.addEdgeMapped(fromNode, toNode);
+                            }
+                    }
+                    else {
+                        for(Neighborhood n : index[toNode].values())
+                            if (index[fromNode].containsKey(n.centralNode)) {
+                                n.addEdgeMapped(fromNode, toNode);
+                            }
+                    }
                 }
             }
         }
@@ -137,8 +149,12 @@ public class CutNeighborhoods implements Stage {
         ArrayList<Integer>[] adjacencyList;
         int centralNode;
 
+        HashMap<Integer, Integer> idMap = new HashMap<>();
+        int currentMaxId = 0;
+
         public void init(int n, int initialCapacity, int centralNode) {
             this.centralNode = centralNode;
+            mapId(centralNode);
             adjacencyList = new ArrayList[n];
             for (int i = 0; i < n; i++) {
                 adjacencyList[i] = new ArrayList<>(initialCapacity);
@@ -150,8 +166,13 @@ public class CutNeighborhoods implements Stage {
             return this.centralNode - o.centralNode;
         }
 
-        public void addEdge(int fromNode, int toNode) {
-            adjacencyList[fromNode].add(toNode);
+        public void addEdgeMapped(int fromNode, int toNode) {
+            adjacencyList[idMap.get(fromNode)].add(idMap.get(toNode));
+        }
+
+        public void mapId(int old) {
+            idMap.put(old, currentMaxId);
+            currentMaxId += 1;
         }
     }
 }
