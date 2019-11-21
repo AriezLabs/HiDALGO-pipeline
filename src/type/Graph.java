@@ -1,8 +1,14 @@
 package type;
 
-public class Graph implements DataType{
-    @Override
-    public void save(String path) {
+import java.util.ArrayList;
 
+public class Graph implements DataType{
+
+    private class Node {
+        int id;
+
+        public Node(int id) {
+            this.id = id;
+        }
     }
 }

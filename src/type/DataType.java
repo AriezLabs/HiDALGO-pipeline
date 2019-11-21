@@ -1,5 +1,7 @@
 package type;
 
 public interface DataType {
-    void save(String path);
+    default void save(String path) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -5,6 +5,9 @@ import type.DataType;
 import type.Graph;
 import type.filetype.MetisFile;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Map;
 
 public class ParseMetis implements Stage {
@@ -25,7 +28,12 @@ public class ParseMetis implements Stage {
 
     @Override
     public DataType execute(DataType uncastedInput) throws Exception {
-        MetisFile in = (MetisFile) uncastedInput;
+        File in = ((MetisFile) uncastedInput).getFile();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(in))) {
+
+        }
+
         return null;
     }
 }

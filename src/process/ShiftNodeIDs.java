@@ -6,12 +6,9 @@ import type.filetype.MetisFile;
 
 import java.util.Map;
 
-public class ClusterNeighborhoods extends PythonScript implements Stage {
-    public static final String scriptPath = "python/ClusterNeighborhoods.py";
-
-    private static final  String nthreadsParamName = "threads";
-
-    private String nthreads;
+public class ShiftNodeIDs extends PythonScript implements Stage {
+    public static final String scriptPath = "python/ShiftNodeIDs.py";
+    private String delta;
 
     @Override
     public Class getInputType() {
@@ -25,8 +22,8 @@ public class ClusterNeighborhoods extends PythonScript implements Stage {
 
     @Override
     public void configure(Map<String, String> params) throws BadConfigException {
-        if ((nthreads = params.get(nthreadsParamName)) == null)
-            nthreads = "1";
+        if ((delta = params.get("delta")) == null)
+            delta = "0";
     }
 
     @Override
@@ -34,12 +31,12 @@ public class ClusterNeighborhoods extends PythonScript implements Stage {
         MetisFile in = (MetisFile) uncastedInput;
 
         String path = in.getFile().getAbsolutePath();
-        String outPath = path + "Communities.nls";
-        int exitcode = run(scriptPath, path, outPath, nthreads);
+        String outPath = String.format("%sshiftedBy%s.metis", path, delta);
+        int exitcode = run(scriptPath, path, outPath, delta);
 
         if(exitcode == 0)
-            return null;//new MetisFile(outPath, 0);
+            return new MetisFile(outPath, 0);
         else
-            throw new RuntimeException("ClusterNeighborhoods python script exited with bad code " + exitcode);
+            throw new RuntimeException("ShiftNodeIDs python script exited with bad code " + exitcode);
     }
 }

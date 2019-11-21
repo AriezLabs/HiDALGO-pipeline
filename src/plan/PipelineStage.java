@@ -39,7 +39,7 @@ class PipelineStage {
         }
 
         long execTime = System.currentTimeMillis() - startTime;
-        Log.info(String.format("stage %s completed in %ds", name, (int) (0.001d * execTime)));
+        Log.info(String.format("stage %s completed in %fs", name, (0.001d * execTime)));
         return result;
     }
 

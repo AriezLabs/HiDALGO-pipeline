@@ -16,7 +16,7 @@ abstract class PythonScript {
      */
     int run(String script, String... params) throws Exception {
         String[] command = new String[params.length + 2];
-        command[0] = "python";
+        command[0] = "/usr/bin/python";
         command[1] = script;
         System.arraycopy(params, 0, command, 2, params.length);
 

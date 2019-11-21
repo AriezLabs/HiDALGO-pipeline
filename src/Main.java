@@ -16,7 +16,7 @@ public class Main {
         ExecutionPlan plan;
         String planName = args[0].split("/")[args[0].split("/").length - 1];
 
-        Log.setCurrentLogLevel(Log.DEBUG);
+        Log.setCurrentLogLevel(Log.INFO);
 
         try {
             plan = new ExecutionPlan(args[0]);

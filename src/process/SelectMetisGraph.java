@@ -32,7 +32,7 @@ public class SelectMetisGraph implements Stage {
             throw new BadConfigException(String.format("required param %s not set", pathParam));
 
         if (params.get(indexOffsetParam) == null) {
-            indexOffset = 0;
+            indexOffset = 1;
         } else {
             indexOffset = Integer.parseInt(params.get(indexOffsetParam));
         }
