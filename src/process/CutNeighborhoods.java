@@ -36,10 +36,10 @@ public class CutNeighborhoods implements Stage {
         MetisFile mf = (MetisFile) uncastedInput;
 
         firstPass(mf);
-        Log.info("inited db and indexed", 1);
+        Log.info("inited neighborhoods and indexed", 1);
         secondPass(mf);
-        Log.info("filled db", 1);
-        // TODO write writer; check correctness of this beast
+        Log.info("extracted neighborhoods", 1);
+        // TODO write writer; check correctness of this beast against frameworks etc.
         write();
 
         return null;
@@ -98,10 +98,6 @@ public class CutNeighborhoods implements Stage {
                     index[currentNode].put(currentLine, neighborhoods[currentLine]);
                 }
             }
-
-            // TODO test performance of sorted lists vs. hashmaps
-            //for(ArrayList<Neighborhood> al : index)
-            //    Collections.sort(al);
         }
     }
 
@@ -127,25 +123,16 @@ public class CutNeighborhoods implements Stage {
                     // For all neighborhoods that contain nodes fromNode and toNode,
                     // add an edge between the two nodes
                     // choose the smaller of both maps to iterate over, shaves a few % off runtime
-                    // TODO test performance of sorted lists vs. hash index
-                    if (index[fromNode].size() < index[toNode].size()) {
-                        for(Neighborhood n : index[fromNode].values())
-                            if (index[toNode].containsKey(n.centralNode)) {
-                                n.addEdgeMapped(fromNode, toNode);
-                            }
-                    }
-                    else {
-                        for(Neighborhood n : index[toNode].values())
-                            if (index[fromNode].containsKey(n.centralNode)) {
-                                n.addEdgeMapped(fromNode, toNode);
-                            }
-                    }
+                    for(Neighborhood n : index[fromNode].values())
+                        if (index[toNode].containsKey(n.centralNode)) {
+                            n.addEdgeMapped(fromNode, toNode);
+                        }
                 }
             }
         }
     }
 
-    private class Neighborhood implements Comparable<Neighborhood> {
+    private class Neighborhood {
         ArrayList<Integer>[] adjacencyList;
         int centralNode;
 
@@ -159,11 +146,6 @@ public class CutNeighborhoods implements Stage {
             for (int i = 0; i < n; i++) {
                 adjacencyList[i] = new ArrayList<>(initialCapacity);
             }
-        }
-
-        @Override
-        public int compareTo(Neighborhood o) {
-            return this.centralNode - o.centralNode;
         }
 
         public void addEdgeMapped(int fromNode, int toNode) {
