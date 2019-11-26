@@ -3,18 +3,20 @@ package process;
 import excption.BadConfigException;
 import log.Log;
 import type.DataType;
+import type.Neighborhoods;
 import type.filetype.MetisFile;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.StreamTokenizer;
+import java.io.*;
 import java.util.*;
 
+/**
+ * Cut out all neighborhoods. Do not include their central node
+ * Return Neighborhoods object, a wrapper around an array of neighborhoods
+ */
 public class CutNeighborhoods implements Stage {
 
-    Neighborhood[] neighborhoods;
-    HashMap<Integer, Neighborhood>[] index;
+    Neighborhoods.Neighborhood[] neighborhoods;
+    HashMap<Integer, Neighborhoods.Neighborhood>[] index;
 
     @Override
     public Class getInputType() {
@@ -23,12 +25,11 @@ public class CutNeighborhoods implements Stage {
 
     @Override
     public Class getReturnType() {
-        return null;
+        return Neighborhoods.class;
     }
 
     @Override
     public void configure(Map<String, String> params) throws BadConfigException {
-
     }
 
     @Override
@@ -36,22 +37,16 @@ public class CutNeighborhoods implements Stage {
         MetisFile mf = (MetisFile) uncastedInput;
 
         firstPass(mf);
-        Log.info("inited neighborhoods and indexed", 1);
+        Log.info("inited and indexed neighborhoods", 1);
+
         secondPass(mf);
         Log.info("extracted neighborhoods", 1);
-        // TODO write writer; check correctness of this beast against frameworks etc.
-        write();
 
-        return null;
-    }
-
-    private void write() {
-
+        return new Neighborhoods(neighborhoods);
     }
 
     /**
      * create and init neighborhood class instances, construct index
-     * @return success
      */
     private void firstPass(MetisFile input) throws Exception {
         File in = input.getFile();
@@ -70,12 +65,12 @@ public class CutNeighborhoods implements Stage {
             int numberOfEdges = Integer.parseInt(header[1]);
             int averageDegree = numberOfEdges / numberOfNodes;
 
-            neighborhoods = new Neighborhood[numberOfNodes];
+            neighborhoods = new Neighborhoods.Neighborhood[numberOfNodes];
             index = new HashMap[numberOfNodes];
 
             // initialize array lists
             for (int i = 0; i < neighborhoods.length; i++) {
-                neighborhoods[i] = new Neighborhood();
+                neighborhoods[i] = new Neighborhoods.Neighborhood();
                 index[i] = new HashMap<>(2 * numberOfEdges / numberOfNodes);
             }
 
@@ -101,6 +96,9 @@ public class CutNeighborhoods implements Stage {
         }
     }
 
+    /**
+     * this step fills the neighborhood objects with all edges belonging to them
+     */
     private void secondPass(MetisFile input) throws Exception {
         File in = input.getFile();
 
@@ -123,8 +121,8 @@ public class CutNeighborhoods implements Stage {
                     // For all neighborhoods that contain nodes fromNode and toNode,
                     // add an edge between the two nodes
                     // choose the smaller of both maps to iterate over, shaves a few % off runtime
-                    for(Neighborhood n : index[fromNode].values())
-                        if (index[toNode].containsKey(n.centralNode)) {
+                    for(Neighborhoods.Neighborhood n : index[fromNode].values())
+                        if (index[toNode].containsKey(n.getCentralNode())) {
                             n.addEdgeMapped(fromNode, toNode);
                         }
                 }
@@ -132,29 +130,4 @@ public class CutNeighborhoods implements Stage {
         }
     }
 
-    private class Neighborhood {
-        ArrayList<Integer>[] adjacencyList;
-        int centralNode;
-
-        HashMap<Integer, Integer> idMap = new HashMap<>();
-        int currentMaxId = 0;
-
-        public void init(int n, int initialCapacity, int centralNode) {
-            this.centralNode = centralNode;
-            mapId(centralNode);
-            adjacencyList = new ArrayList[n];
-            for (int i = 0; i < n; i++) {
-                adjacencyList[i] = new ArrayList<>(initialCapacity);
-            }
-        }
-
-        public void addEdgeMapped(int fromNode, int toNode) {
-            adjacencyList[idMap.get(fromNode)].add(idMap.get(toNode));
-        }
-
-        public void mapId(int old) {
-            idMap.put(old, currentMaxId);
-            currentMaxId += 1;
-        }
-    }
 }

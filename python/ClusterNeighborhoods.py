@@ -23,21 +23,6 @@ def task(params):
     id = params[1]
     nthreads = params[2]
 
-    main_graph = readGraph(file, Format.METIS)
-
-    # TODO langsam...
-    def normalizedNeighborhood(g, node):
-        neighbors = g.neighbors(node)
-        subg = g.subgraphFromNodes(neighbors)
-        copy = Graph(len(neighbors))
-
-        idmap = dict()
-        for i in range(len(neighbors)):
-            idmap[neighbors[i]] = i
-
-        subg.forEdges(lambda n0, n1, w, eid: copy.addEdge(idmap[n0], idmap[n1]))
-
-        return copy
 
 
     # PLM is parallel by default, but the neighborhoods are tiny enough for 1 thread
