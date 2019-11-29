@@ -6,5 +6,8 @@ SelectMetisGraph {
 CutNeighborhoods {
 }
 
+ClusterNeighborhoods {
+}
+
 
 

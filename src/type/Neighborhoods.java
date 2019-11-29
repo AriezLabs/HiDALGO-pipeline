@@ -13,8 +13,38 @@ import java.util.HashMap;
 public class Neighborhoods implements DataType {
     Neighborhood[] neighborhoods;
 
+    /**
+     * Removes empty neighborhoods
+     * @param neighborhoods
+     */
     public Neighborhoods(Neighborhood[] neighborhoods) {
-        this.neighborhoods = neighborhoods;
+        ArrayList<Neighborhood> al = new ArrayList<>(neighborhoods.length);
+        for(Neighborhood n : neighborhoods)
+            if(n.numEdges() > 0)
+                al.add(n);
+        this.neighborhoods = al.toArray(new Neighborhood[0]);
+    }
+
+    public int getNumNeighborhoods() {
+        return neighborhoods.length;
+    }
+
+    /**
+     * write a single one indexed neighborhood to a (named pipe) file
+     */
+    public void toPipe(String path, int i) throws IOException, InterruptedException {
+        FileWriter fw = new FileWriter(new File(path));
+        Neighborhood n = neighborhoods[i];
+
+        fw.write(n.numNodes() + " " + n.numEdges() / 2 + "\n");
+
+        for (int j = 0; j < n.adjacencyList.length; j++) {
+            for (int k : n.adjacencyList[j])
+                fw.write(++k + " "); // increment by 1 so node ids start at 1
+            fw.write("\n");
+        }
+
+        fw.close();
     }
 
     /**

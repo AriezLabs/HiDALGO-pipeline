@@ -1,20 +1,26 @@
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.RandomAccessFile;
 
 public class RandomTests {
     public static void main(String[] args) throws Exception {
-        try (BufferedReader br = new BufferedReader(new FileReader(new File("data/pokec.metis")))) {
-            StreamTokenizer st = new StreamTokenizer(br);
-            st.eolIsSignificant(true);
+        Process p = new ProcessBuilder("python", "/home/ariez/Projects/HiDALGO-pipeline/test/testPyFile.py").inheritIO().start();
 
-            System.out.println(br.readLine());
-            while(st.nextToken() != StreamTokenizer.TT_EOF) {
-                if(st.ttype == StreamTokenizer.TT_EOL)
-                    System.out.println("eol");
-                int casted = (int) st.nval;
-                int rounded = (int) (st.nval + 0.5);
-                if(casted != rounded)
-                    System.out.println(casted + " - " + rounded);
+        try {
+            File f_pipe = new File ( "/tmp/test" );
+            RandomAccessFile raf = new RandomAccessFile(f_pipe, "r");  // point 1
+            for(;;){
+                String line = raf.readLine(); //point 2
+                //Take care to check the line -
+                System.out.println(line);
+                //it is null when the pipe has no more available data.
+                if( line==null )  break; //point 3
             }
+            System.out.println("PIPE DOWN");
+        }
+        catch (Exception e) {
+            // do something
         }
     }
 }

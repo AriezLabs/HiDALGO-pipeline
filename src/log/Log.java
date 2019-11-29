@@ -62,6 +62,9 @@ public class Log {
     }
 
     public static synchronized void log(Object stuff, int logLevel, int indentLevel) {
+        log(stuff, logLevel, indentLevel, true);
+    }
+    public static synchronized void log(Object stuff, int logLevel, int indentLevel, boolean println) {
         if(currentLogLevel <= logLevel) {
             System.out.printf("[%.3f ", 0.001d * (System.currentTimeMillis() - startTime));
 
@@ -90,7 +93,10 @@ public class Log {
                     System.out.print("─");
             }
 
-            System.out.println(stuff.toString());
+            if(println)
+                System.out.println(stuff.toString());
+            else
+                System.out.print(stuff.toString());
         }
     }
 

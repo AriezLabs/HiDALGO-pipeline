@@ -24,7 +24,7 @@ abstract class PythonScript {
 
         Log.info(String.format("executing: %s", pb.command().stream().reduce("", (a, b) -> a + " " + b)), 1);
 
-        Process p = pb.start();
+        Process p = pb.start();//inheritIO().start();
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
             String line;
