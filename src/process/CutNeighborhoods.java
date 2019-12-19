@@ -42,7 +42,7 @@ public class CutNeighborhoods implements Stage {
         secondPass(mf);
         Log.info("extracted neighborhoods", 1);
 
-        return new Neighborhoods(neighborhoods);
+        return new Neighborhoods(neighborhoods, mf.getFile().getPath());
     }
 
     /**

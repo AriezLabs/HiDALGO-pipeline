@@ -72,7 +72,7 @@ public class ClusteringTest {
                     fail("algo output is missing community " + result.set);
             }
 
-            System.out.println("SUCCESS: exact match");
+            System.out.println("SUCCESS: all clusters are an exact match");
         }
     }
 

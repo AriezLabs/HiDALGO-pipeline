@@ -1,6 +1,16 @@
+usage = """
+Read Metis file from FIFO passed via argv[1]
+Cluster it using argv[2] threads, append communities larger than argv[4] to argv[5]
+Write 'k' to argv[3] FIFO as response and wait for next metis file to appear in argv[1]
+Terminate when "END" is written to argv[1]
+"""
+
 from networkit import *
 import sys
-from datetime import datetime
+
+if len(sys.argv) != 6:
+    print(usage)
+    sys.exit(1)
 
 setNumberOfThreads(int(sys.argv[3]))
 communityMinSize = int(sys.argv[4])

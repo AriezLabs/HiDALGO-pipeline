@@ -12,21 +12,28 @@ import java.util.HashMap;
  */
 public class Neighborhoods implements DataType {
     Neighborhood[] neighborhoods;
+    String parentGraph;
 
     /**
      * Removes empty neighborhoods
      * @param neighborhoods
+     * @param path
      */
-    public Neighborhoods(Neighborhood[] neighborhoods) {
+    public Neighborhoods(Neighborhood[] neighborhoods, String path) {
         ArrayList<Neighborhood> al = new ArrayList<>(neighborhoods.length);
         for(Neighborhood n : neighborhoods)
             if(n.numEdges() > 0)
                 al.add(n);
         this.neighborhoods = al.toArray(new Neighborhood[0]);
+        this.parentGraph = path;
     }
 
     public int getNumNeighborhoods() {
         return neighborhoods.length;
+    }
+
+    public String getParentGraph() {
+        return parentGraph;
     }
 
     /**

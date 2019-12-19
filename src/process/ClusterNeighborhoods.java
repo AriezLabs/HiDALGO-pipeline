@@ -4,6 +4,7 @@ import excption.BadConfigException;
 import log.Log;
 import type.DataType;
 import type.Neighborhoods;
+import type.filetype.NodelistFile;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -14,8 +15,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Take Neighborhoods class,
- * cluster each one using NetworKit
+ * Take Neighborhoods object,
+ * cluster each neighborhood using NetworKit
  * Params:
  *     nthreads (default 4)
  *     communityMinSize (default 1)
@@ -42,7 +43,7 @@ public class ClusterNeighborhoods extends PythonScript implements Stage {
 
     @Override
     public Class getReturnType() {
-        return null;
+        return NodelistFile.class;
     }
 
     @Override
@@ -57,6 +58,7 @@ public class ClusterNeighborhoods extends PythonScript implements Stage {
             nthreads = "2";
     }
 
+    // possible improvement: spawn multiple Python processes
     @Override
     public DataType execute(DataType uncastedInput) throws Exception {
         Neighborhoods in = (Neighborhoods) uncastedInput;
@@ -89,7 +91,7 @@ public class ClusterNeighborhoods extends PythonScript implements Stage {
         new File(inFifoPath).delete();
 
         if(exitcode.get() == 0)
-            return null;//new MetisFile(outPath, 0);
+            return new NodelistFile(outfile, in.getParentGraph());
         else
             throw new RuntimeException("ClusterNeighborhoods python script exited with bad code " + exitcode);
     }
