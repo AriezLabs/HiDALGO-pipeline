@@ -1,61 +1,42 @@
-usage = """
-usage: python ClusterNeighborhoods.py inputFifo outputFifo nthreads
-metisFile = path to one indexed metis graph
-targetFile = filename to write new graph with added central node connected to every other node to
-"""
-
-import sys
-
 from networkit import *
+import sys
+from datetime import datetime
 
-if len(sys.argv) != 4:
-    print(usage)
-    sys.exit(1)
+setNumberOfThreads(int(sys.argv[3]))
+communityMinSize = int(sys.argv[4])
+outfile = sys.argv[5]
 
-i = 0
-while(True):
-    with open(sys.argv[2]) as f:
-        f.readlines()
-        print(i)
-        i += 1
-    with open(sys.argv[3], "w") as f:
+with open(outfile, "w") as f:
+    f.write("")
+
+while True:
+    idmap = {}
+
+    with open(sys.argv[1], "r") as f:
+        head = f.readline()
+        if head.strip() == "END":
+            break
+        lines = f.readlines()
+
+    with open(sys.argv[2], "w") as f:
         f.write("k")
 
-#from multiprocessing import Pool
-#
-#if len(sys.argv) != 4:
-#    print(usage)
-#    sys.exit(1)
-#
-#inputGraph = sys.argv[1]
-#outputPath = sys.argv[2]
-#nthreads = int(sys.argv[3])
-#
-#
-#def task(params):
-#    file = params[0]
-#    id = params[1]
-#    nthreads = params[2]
-#
-#
-#
-#    # PLM is parallel by default, but the neighborhoods are tiny enough for 1 thread
-#    # also scaling completely breaks if we use too many threads
-#    setNumberOfThreads(1)
-#
-#    for i in range(id, main_graph.numberOfNodes(), nthreads):
-#
-#        #subg = normalizedNeighborhood(main_graph, i)
-#        # PLM runs slower if node ids are spread apart
-#
-#        if len(subg.edges()) > 0:
-#            community.detectCommunities(subg, algo=community.PLM(subg, True, par="none"))
-#
-#
-#if __name__ == '__main__':
-#    job = [(inputGraph, x, nthreads) for x in range(nthreads)]
-#
-#    with Pool(nthreads) as p:
-#        p.map(task, job)
-#
-#    sys.exit(0)
+    g = Graph(int(head.split()[0]))
+    i = 0
+    for line in lines:
+        split = line.strip().split()
+        idmap[i] = split[0]
+        for x in split[1:]:
+            if not g.hasEdge(int(x) - 1, i):
+                g.addEdge(i, int(x) - 1)
+        i += 1
+
+    c = community.detectCommunities(g, algo=community.PLM(g, True))
+
+    with open(outfile, "a") as f:
+        for subset in c.getSubsetIds():
+            m = c.getMembers(subset)
+            if len(m) >= communityMinSize:
+                for node in m:
+                    f.write(idmap[node] + " ")
+                f.write("\n")

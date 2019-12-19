@@ -9,15 +9,31 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ClusterNeighborhoods extends PythonScript implements Stage {
-    public static final String scriptPath = "test/testPyFile.py";
+/**
+ * Take Neighborhoods class,
+ * cluster each one using NetworKit
+ * Params:
+ *     nthreads (default 4)
+ *     communityMinSize (default 1)
+ *     outfile (default communities.nl)
+ *     pythonBinary (default /usr/bin/python)
+ */
 
-    private static final  String nthreadsParamName = "threads";
+public class ClusterNeighborhoods extends PythonScript implements Stage {
+    public static final String scriptPath = "python/ClusterNeighborhoods.py";
+
+    private static final String nthreadsParamName = "threads";
+    private static final String communityMinSizeParamName = "communityminsize";
+    private static final String outfileParamName = "outfile";
+    private static final String pythonBinaryParamName = "pythonbinary";
 
     private String nthreads;
+    private String communityMinSize;
+    private String outfile;
 
     @Override
     public Class getInputType() {
@@ -30,23 +46,29 @@ public class ClusterNeighborhoods extends PythonScript implements Stage {
     }
 
     @Override
-    public void configure(Map<String, String> params) throws BadConfigException {
+    public void configure(Map<String, String> params) {
+        if (params.get(pythonBinaryParamName) != null)
+            PythonScript.pythonBinary = params.get(pythonBinaryParamName);
+        if ((outfile = params.get(outfileParamName)) == null)
+            outfile = "communities.nl";
+        if ((communityMinSize = params.get(communityMinSizeParamName)) == null)
+            communityMinSize = "1";
         if ((nthreads = params.get(nthreadsParamName)) == null)
-            nthreads = "1";
+            nthreads = "2";
     }
 
     @Override
     public DataType execute(DataType uncastedInput) throws Exception {
         Neighborhoods in = (Neighborhoods) uncastedInput;
 
-        String outFifoPath = "/tmp/test";
-        String inFifoPath = "/tmp/test2";
+        String outFifoPath = mkfifo("JPyPipe");
+        String inFifoPath = mkfifo("PyJPipe");
 
         AtomicInteger exitcode = new AtomicInteger();
 
         Thread t = new Thread(() -> {
             try {
-                exitcode.set(run(scriptPath, outFifoPath, inFifoPath, nthreads));
+                exitcode.set(run(scriptPath, outFifoPath, inFifoPath, nthreads, communityMinSize, outfile));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -56,12 +78,15 @@ public class ClusterNeighborhoods extends PythonScript implements Stage {
 
         for (int i = 0; i < in.getNumNeighborhoods(); i++) {
             in.toPipe(outFifoPath, i);
-            Log.log("item: " + i + "\r", Log.INFO, 2, false);
+            Log.log("item: " + i + "\r", Log.DEBUG, 2, false);
             waitForOK(inFifoPath);
         }
 
         writeEndSignal(outFifoPath);
         t.join();
+
+        new File(outFifoPath).delete();
+        new File(inFifoPath).delete();
 
         if(exitcode.get() == 0)
             return null;//new MetisFile(outPath, 0);
@@ -78,7 +103,15 @@ public class ClusterNeighborhoods extends PythonScript implements Stage {
     private void waitForOK(String path) throws IOException, InterruptedException {
         File  f_pipe = new File (path);
         RandomAccessFile raf = new RandomAccessFile(f_pipe, "r");  // point 1
-        String line = raf.readLine();
+        raf.readLine();
         raf.close();
+    }
+
+    private String mkfifo(String name) throws IOException {
+        ProcessBuilder pb = new ProcessBuilder();
+        String dir = System.getProperty("user.dir") + "/";
+        pb.command("mkfifo", dir + name);
+        pb.inheritIO().start();
+        return dir + name;
     }
 }

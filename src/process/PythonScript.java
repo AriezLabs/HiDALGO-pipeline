@@ -7,6 +7,9 @@ import java.io.InputStreamReader;
 
 abstract class PythonScript {
 
+    public static String pythonBinary = "/usr/bin/python";
+    public static boolean inheritIO = false;
+
     /**
      * run a python script
      * @param script Path to python script
@@ -16,7 +19,7 @@ abstract class PythonScript {
      */
     int run(String script, String... params) throws Exception {
         String[] command = new String[params.length + 2];
-        command[0] = "/usr/bin/python";
+        command[0] = pythonBinary;
         command[1] = script;
         System.arraycopy(params, 0, command, 2, params.length);
 
@@ -24,7 +27,12 @@ abstract class PythonScript {
 
         Log.info(String.format("executing: %s", pb.command().stream().reduce("", (a, b) -> a + " " + b)), 1);
 
-        Process p = pb.start();//inheritIO().start();
+        Process p;
+        if (inheritIO) {
+            p = pb.start();
+        } else {
+            p = pb.inheritIO().start();
+        }
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
             String line;

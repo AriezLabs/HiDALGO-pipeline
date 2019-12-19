@@ -39,11 +39,13 @@ public class Neighborhoods implements DataType {
         fw.write(n.numNodes() + " " + n.numEdges() / 2 + "\n");
 
         for (int j = 0; j < n.adjacencyList.length; j++) {
+            fw.write((n.reverseIdMap.get(j) + 1) + " ");
             for (int k : n.adjacencyList[j])
                 fw.write(++k + " "); // increment by 1 so node ids start at 1
             fw.write("\n");
         }
 
+        fw.flush();
         fw.close();
     }
 
@@ -77,6 +79,7 @@ public class Neighborhoods implements DataType {
         int centralNode;
 
         HashMap<Integer, Integer> idMap = new HashMap<>();
+        HashMap<Integer, Integer> reverseIdMap = new HashMap<>();
         int currentMaxId = 0;
 
         public void init(int n, int initialCapacity, int centralNode) {
@@ -95,6 +98,7 @@ public class Neighborhoods implements DataType {
 
         public void mapId(int old) {
             idMap.put(old, currentMaxId);
+            reverseIdMap.put(currentMaxId, old);
             currentMaxId += 1;
         }
 
