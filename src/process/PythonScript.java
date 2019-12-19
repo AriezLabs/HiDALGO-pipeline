@@ -29,9 +29,9 @@ abstract class PythonScript {
 
         Process p;
         if (inheritIO) {
-            p = pb.start();
-        } else {
             p = pb.inheritIO().start();
+        } else {
+            p = pb.start();
         }
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {

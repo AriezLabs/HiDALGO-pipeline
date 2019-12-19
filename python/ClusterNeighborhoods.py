@@ -21,6 +21,7 @@ while True:
     with open(sys.argv[2], "w") as f:
         f.write("k")
 
+    cnode = int(head.split()[2]) + 1
     g = Graph(int(head.split()[0]))
     i = 0
     for line in lines:
@@ -36,7 +37,8 @@ while True:
     with open(outfile, "a") as f:
         for subset in c.getSubsetIds():
             m = c.getMembers(subset)
-            if len(m) >= communityMinSize:
+            if len(m) + 1 >= communityMinSize: # +1: central node
+                f.write(str(cnode) + " ")
                 for node in m:
                     f.write(idmap[node] + " ")
                 f.write("\n")

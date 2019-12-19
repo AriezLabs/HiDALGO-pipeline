@@ -36,7 +36,7 @@ public class Neighborhoods implements DataType {
         FileWriter fw = new FileWriter(new File(path));
         Neighborhood n = neighborhoods[i];
 
-        fw.write(n.numNodes() + " " + n.numEdges() / 2 + "\n");
+        fw.write(n.numNodes() + " " + n.numEdges() / 2 + " " + n.centralNode + "\n");
 
         for (int j = 0; j < n.adjacencyList.length; j++) {
             fw.write((n.reverseIdMap.get(j) + 1) + " ");
